@@ -53,4 +53,25 @@ app.get('/login', (req, res) => {
     res.render('login');
 });
 
+app.post('/login', (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    User.findOne({email: username}, (err, foundUser) => {
+        if (!err) {
+            if (foundUser) {
+                if (foundUser.password === password) {
+                    res.render('secrets');
+                } else {
+                    res.send('Incorect password');
+                }
+            } else {
+                res.send('User not found');
+            }
+        } else {
+            console.log(err);
+        }
+    });
+});
+
 app.listen(3000, () => {console.log('Server started');});
