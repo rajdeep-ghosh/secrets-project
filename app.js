@@ -35,6 +35,20 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
+app.post('/register', (req, res) => {
+    const user = new User({
+        email: req.body.username,
+        password: req.body.password
+    });
+    user.save((err) => {
+        if (!err) {
+            res.render('secrets');
+        } else {
+            console.log(err);
+        }
+    });
+});
+
 app.get('/login', (req, res) => {
     res.render('login');
 });
