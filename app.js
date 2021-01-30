@@ -3,8 +3,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
-const encrypt = require('mongoose-encryption');
+// const encrypt = require('mongoose-encryption');
+// const md5 = require('md5');
+const bcrypt = require('bcrypt');
 const md5 = require('md5');
+
+const saltRounds = 10;
 
 const app = express();
 
@@ -42,17 +46,24 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-    const user = new User({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
-    user.save((err) => {
+    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
         if (!err) {
-            res.render('secrets');
+            const user = new User({
+                email: req.body.username,
+                // password: md5(req.body.password)
+                password: hash
+            });
+            user.save((err) => {
+                if (!err) {
+                    res.render('secrets');
+                } else {
+                    console.log(err);
+                }
+            });
         } else {
             console.log(err);
         }
-    });
+    });    
 });
 
 app.get('/login', (req, res) => {
@@ -61,16 +72,19 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     const username = req.body.username;
-    const password = md5(req.body.password);
+    // const password = md5(req.body.password);
+    const password = req.body.password;
 
     User.findOne({email: username}, (err, foundUser) => {
         if (!err) {
             if (foundUser) {
-                if (foundUser.password === password) {
-                    res.render('secrets');
-                } else {
-                    res.send('Incorect password');
-                }
+                bcrypt.compare(password, foundUser.password, (err, result) => {
+                    if (result == true) {
+                        res.render('secrets');
+                    } else {
+                        res.send('Incorect password');
+                    }
+                }); 
             } else {
                 res.send('User not found');
             }
