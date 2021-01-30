@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
+const encrypt = require('mongoose-encryption');
 
 const app = express();
 
@@ -23,6 +25,9 @@ const userSchema = new mongoose.Schema({
     email: String,
     password: String
 });
+
+// Setup mongoose-encryption to encrypt password field in mongodb
+userSchema.plugin(encrypt, {secret: process.env.SECRET_KEY, excludeFromEncryption: ['email']});
 
 // Create user schema model
 const User = mongoose.model('User', userSchema);
