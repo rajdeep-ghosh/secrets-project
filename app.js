@@ -5,16 +5,27 @@ const ejs = require('ejs');
 const mongoose = require('mongoose');
 // const encrypt = require('mongoose-encryption');
 // const md5 = require('md5');
-const bcrypt = require('bcrypt');
-const md5 = require('md5');
+// const bcrypt = require('bcrypt');
+const session = require('express-session');
+const passport = require('passport');
+const passportLocalMongoose = require('passport-local-mongoose');
 
-const saltRounds = 10;
+// const saltRounds = 10;
 
 const app = express();
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('public'));
+
+app.use(session({
+    secret: 'This is my secret.',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Connect MongoDB at default port 27017.
 mongoose.connect('mongodb://localhost:27017/userDB', {useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true}, (err) => {
@@ -34,8 +45,14 @@ const userSchema = new mongoose.Schema({
 // Setup mongoose-encryption to encrypt password field in mongodb
 // userSchema.plugin(encrypt, {secret: process.env.SECRET_KEY, excludeFromEncryption: ['email']});
 
+userSchema.plugin(passportLocalMongoose);
+
 // Create user schema model
 const User = mongoose.model('User', userSchema);
+
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.get('/', (req, res) => {
     res.render('home');
