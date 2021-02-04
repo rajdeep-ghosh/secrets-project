@@ -111,27 +111,46 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    const username = req.body.username;
-    // const password = md5(req.body.password);
-    const password = req.body.password;
+    const user = new User({
+        username: req.body.username,
+        password: req.body.password
+    });
 
-    User.findOne({email: username}, (err, foundUser) => {
+    req.logIn(user, (err) => {
         if (!err) {
-            if (foundUser) {
-                bcrypt.compare(password, foundUser.password, (err, result) => {
-                    if (result == true) {
-                        res.render('secrets');
-                    } else {
-                        res.send('Incorect password');
-                    }
-                }); 
-            } else {
-                res.send('User not found');
-            }
-        } else {
+            passport.authenticate('local')(req, res, () => {
+                res.redirect('/secrets');
+            });
+        } else { 
             console.log(err);
+            res.redirect('/login');
         }
     });
+
+
+
+
+    // const username = req.body.username;
+    // // const password = md5(req.body.password);
+    // const password = req.body.password;
+
+    // User.findOne({email: username}, (err, foundUser) => {
+    //     if (!err) {
+    //         if (foundUser) {
+    //             bcrypt.compare(password, foundUser.password, (err, result) => {
+    //                 if (result == true) {
+    //                     res.render('secrets');
+    //                 } else {
+    //                     res.send('Incorect password');
+    //                 }
+    //             }); 
+    //         } else {
+    //             res.send('User not found');
+    //         }
+    //     } else {
+    //         console.log(err);
+    //     }
+    // });
 });
 
 app.listen(3000, () => {console.log('Server started');});
