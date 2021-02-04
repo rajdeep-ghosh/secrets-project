@@ -58,29 +58,52 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
+app.get('/secrets', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.render('secrets');
+    } else {
+        res.redirect('/login');
+    }
+});
+
 app.get('/register', (req, res) => {
     res.render('register');
 });
 
 app.post('/register', (req, res) => {
-    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+    User.register({username: req.body.username}, req.body.password, (err, user) => {
         if (!err) {
-            const user = new User({
-                email: req.body.username,
-                // password: md5(req.body.password)
-                password: hash
-            });
-            user.save((err) => {
-                if (!err) {
-                    res.render('secrets');
-                } else {
-                    console.log(err);
-                }
+            passport.authenticate('local')(req, res, () => {
+                res.redirect('/secrets');
             });
         } else {
             console.log(err);
+            res.redirect('/register');
         }
-    });    
+    });
+
+
+
+
+
+    // bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+    //     if (!err) {
+    //         const user = new User({
+    //             email: req.body.username,
+    //             // password: md5(req.body.password)
+    //             password: hash
+    //         });
+    //         user.save((err) => {
+    //             if (!err) {
+    //                 res.render('secrets');
+    //             } else {
+    //                 console.log(err);
+    //             }
+    //         });
+    //     } else {
+    //         console.log(err);
+    //     }
+    // });    
 });
 
 app.get('/login', (req, res) => {
