@@ -66,6 +66,11 @@ app.get('/secrets', (req, res) => {
     }
 });
 
+app.get('/logout', (req, res) => {
+    req.logOut();
+    res.redirect('/');
+});
+
 app.get('/register', (req, res) => {
     res.render('register');
 });
@@ -81,9 +86,6 @@ app.post('/register', (req, res) => {
             res.redirect('/register');
         }
     });
-
-
-
 
 
     // bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
@@ -126,8 +128,6 @@ app.post('/login', (req, res) => {
             res.redirect('/login');
         }
     });
-
-
 
 
     // const username = req.body.username;
